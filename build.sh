@@ -8,44 +8,26 @@ set -e
 source fenics.conf
 
 # Choose dependencies versions
-EIGEN_VERSION=3.3.4
-PYBIND11_VERSION=2.2.3
+PIP_VERSION=10.0.1
 PETSC_VERSION=3.9.1
 SLEPC_VERSION=3.9.1
+NUMPY_VERSION=1.14.5
+MATPLOTLIB_VERSION=2.2.2
+JUPYTER_VERSION=1.0.0
+SYMPY_VERSION=1.1.1
+PKGCONFIG_VERSION=1.3.1
 #MPI4PY_VERSION=3.0.0
 PETSC4PY_VERSION=3.9.1
 SLEPC4PY_VERSION=3.9.0
+EIGEN_VERSION=3.3.4
+PYBIND11_VERSION=2.2.3
 DOLFIN_VERSION="${FENICS_VERSION}.post1"
 
 # Create directory for downloading sources
 mkdir -p "${FENICS_PREFIX}/src"
 
 # Update pip, the system one is buggy
-pip3 install --user pip
-
-# Install FEniCS Python packages
-pip3 install -vv --prefix="${FENICS_PREFIX}" fenics-ffc==${FENICS_VERSION}
-
-# Install Eigen headers
-cd "${FENICS_PREFIX}/src"
-wget -O eigen-${EIGEN_VERSION}.tar.gz http://bitbucket.org/eigen/eigen/get/${EIGEN_VERSION}.tar.gz
-mkdir eigen-${EIGEN_VERSION}
-cd eigen-${EIGEN_VERSION}
-tar --strip-components=1 -xzf ../eigen-${EIGEN_VERSION}.tar.gz
-mkdir build
-cd build
-cmake -DCMAKE_INSTALL_PREFIX="${FENICS_PREFIX}" ../
-make install
-
-# Install pybind11 headers
-cd "${FENICS_PREFIX}/src"
-wget -O pybind11-${PYBIND11_VERSION}.tar.gz https://github.com/pybind/pybind11/archive/v${PYBIND11_VERSION}.tar.gz
-tar -xzf pybind11-${PYBIND11_VERSION}.tar.gz
-cd pybind11-${PYBIND11_VERSION}
-mkdir build
-cd build
-cmake -DPYBIND11_TEST=off -DCMAKE_INSTALL_PREFIX="${FENICS_PREFIX}" ../
-make install
+pip3 install --user pip==${PIP_VERSION}
 
 # Install PETSc
 cd "${FENICS_PREFIX}/src"
@@ -70,10 +52,35 @@ make install
 export SLEPC_DIR="${FENICS_PREFIX}"
 
 # Install various Python packages
-pip3 install -vv --upgrade --prefix="${FENICS_PREFIX}" --ignore-installed numpy jupyter matplotlib sympy pkgconfig
+NPY_NUM_BUILD_JOBS=${PROCS} OPENBLAS="${FENICS_PREFIX}/lib/libopenblas.a" pip3 install -vv --prefix="${FENICS_PREFIX}" --upgrade --ignore-installed --no-binary="numpy,matplotlib" numpy==${NUMPY_VERSION} matplotlib==${MATPLOTLIB_VERSION}
+pip3 install -vv --prefix="${FENICS_PREFIX}" --upgrade --ignore-installed jupyter==${JUPYTER_VERSION} sympy==${SYMPY_VERSION} pkgconfig==${PKGCONFIG_VERSION}
 #pip3 install -vv --prefix="${FENICS_PREFIX}" https://bitbucket.org/mpi4py/mpi4py/downloads/mpi4py-${MPI4PY_VERSION}.tar.gz
 pip3 install -vv --prefix="${FENICS_PREFIX}" https://bitbucket.org/petsc/petsc4py/downloads/petsc4py-${PETSC4PY_VERSION}.tar.gz
 pip3 install -vv --prefix="${FENICS_PREFIX}" https://bitbucket.org/slepc/slepc4py/downloads/slepc4py-${SLEPC4PY_VERSION}.tar.gz
+
+# Install Eigen headers
+cd "${FENICS_PREFIX}/src"
+wget -O eigen-${EIGEN_VERSION}.tar.gz http://bitbucket.org/eigen/eigen/get/${EIGEN_VERSION}.tar.gz
+mkdir eigen-${EIGEN_VERSION}
+cd eigen-${EIGEN_VERSION}
+tar --strip-components=1 -xzf ../eigen-${EIGEN_VERSION}.tar.gz
+mkdir build
+cd build
+cmake -DCMAKE_INSTALL_PREFIX="${FENICS_PREFIX}" ../
+make install
+
+# Install pybind11 headers
+cd "${FENICS_PREFIX}/src"
+wget -O pybind11-${PYBIND11_VERSION}.tar.gz https://github.com/pybind/pybind11/archive/v${PYBIND11_VERSION}.tar.gz
+tar -xzf pybind11-${PYBIND11_VERSION}.tar.gz
+cd pybind11-${PYBIND11_VERSION}
+mkdir build
+cd build
+cmake -DPYBIND11_TEST=off -DCMAKE_INSTALL_PREFIX="${FENICS_PREFIX}" ../
+make install
+
+# Install FEniCS Python packages
+pip3 install -vv --prefix="${FENICS_PREFIX}" fenics-ffc==${FENICS_VERSION}
 
 # Get DOLFIN (post release)
 cd "${FENICS_PREFIX}/src"
