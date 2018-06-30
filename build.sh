@@ -4,11 +4,17 @@ set -e
 # Number of process for parallel make steps
 : ${PROCS:=4}
 
-# Load paths and version
+# Update pip, the system one is buggy
+PIP_VERSION=10.0.1
+USER_PREFIX="${HOME}/.local"
+export PATH="${USER_PREFIX}/bin:${PATH}"
+export PYTHONPATH="${USER_PREFIX}/lib/python3.6/site-packages:${PYTHONPATH}"
+pip3 install --user pip==${PIP_VERSION}
+
+# Load paths and FEniCS version
 source fenics.conf
 
 # Choose dependencies versions
-PIP_VERSION=10.0.1
 PETSC_VERSION=3.9.1
 SLEPC_VERSION=3.9.1
 NUMPY_VERSION=1.14.5
@@ -25,9 +31,6 @@ DOLFIN_VERSION="${FENICS_VERSION}.post1"
 
 # Create directory for downloading sources
 mkdir -p "${FENICS_PREFIX}/src"
-
-# Update pip, the system one is buggy
-pip3 install --user pip==${PIP_VERSION}
 
 # Install PETSc
 cd "${FENICS_PREFIX}/src"
@@ -97,6 +100,12 @@ make install
 # Build dolfin Python library
 cd "${FENICS_PREFIX}/src/dolfin/python"
 pip3 install -vv --prefix="${FENICS_PREFIX}" .
+
+# Install dolfin Python demos
+cd "${FENICS_PREFIX}/src/dolfin/python/demo"
+python3 generate-demo-files.py
+mkdir -p "${FENICS_PREFIX}/share/dolfin/demo/python"
+cp -r * "${FENICS_PREFIX}/share/dolfin/demo/python"
 
 # Get mshr
 cd "${FENICS_PREFIX}/src"
