@@ -15,7 +15,7 @@ pip3 install --user pip==${PIP_VERSION}
 source fenics.conf
 
 # Choose dependencies versions
-PETSC_VERSION=3.9.1
+PETSC_VERSION=3.9.2
 SLEPC_VERSION=3.9.1
 NUMPY_VERSION=1.14.5
 MATPLOTLIB_VERSION=2.2.2
