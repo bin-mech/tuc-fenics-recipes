@@ -19,6 +19,7 @@ PETSC_VERSION=3.9.2
 SLEPC_VERSION=3.9.1
 NUMPY_VERSION=1.14.5
 MATPLOTLIB_VERSION=2.2.2
+SCIPY_VERSION=1.1.0
 JUPYTER_VERSION=1.0.0
 SYMPY_VERSION=1.1.1
 PKGCONFIG_VERSION=1.3.1
@@ -54,9 +55,13 @@ make -j ${PROCS}
 make install
 export SLEPC_DIR="${FENICS_PREFIX}"
 
-# Install various Python packages
-NPY_NUM_BUILD_JOBS=${PROCS} OPENBLAS="${FENICS_PREFIX}/lib/libopenblas.a" pip3 install -vv --prefix="${FENICS_PREFIX}" --upgrade --ignore-installed --no-binary="numpy,matplotlib" numpy==${NUMPY_VERSION} matplotlib==${MATPLOTLIB_VERSION}
+# Build NumPy, Matplotlib, SciPy against our BLAS/LAPACK
+NPY_NUM_BUILD_JOBS=${PROCS} OPENBLAS="${FENICS_PREFIX}/lib/libopenblas.a" pip3 install -vv --prefix="${FENICS_PREFIX}" --upgrade --ignore-installed --no-binary="numpy,matplotlib,scipy" numpy==${NUMPY_VERSION} matplotlib==${MATPLOTLIB_VERSION} scipy==${SCIPY_VERSION}
+
+# Install other Python packages
 pip3 install -vv --prefix="${FENICS_PREFIX}" --upgrade --ignore-installed jupyter==${JUPYTER_VERSION} sympy==${SYMPY_VERSION} pkgconfig==${PKGCONFIG_VERSION}
+
+# Build mpi4py, petsc4py, slepc4py from source
 #pip3 install -vv --prefix="${FENICS_PREFIX}" https://bitbucket.org/mpi4py/mpi4py/downloads/mpi4py-${MPI4PY_VERSION}.tar.gz
 pip3 install -vv --prefix="${FENICS_PREFIX}" https://bitbucket.org/petsc/petsc4py/downloads/petsc4py-${PETSC4PY_VERSION}.tar.gz
 pip3 install -vv --prefix="${FENICS_PREFIX}" https://bitbucket.org/slepc/slepc4py/downloads/slepc4py-${SLEPC4PY_VERSION}.tar.gz
