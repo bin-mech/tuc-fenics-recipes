@@ -25,11 +25,11 @@ Building FEniCS
     source fenics.conf
 
     # Run unit tests sequentially
-    cd "${FENICS_PREFIX}/src/dolfin/python/test/unit
+    cd "${FENICS_PREFIX}/src/dolfin/python/test/unit"
     python3 -mpytest
 
     # Run unit tests in parallel
-    cd "${FENICS_PREFIX}/src/dolfin/python/test/unit
+    cd "${FENICS_PREFIX}/src/dolfin/python/test/unit"
     XFAILS_IN_PARALLEL="test_tao_linear_bound_solver"  # failing tests!?!
     mpirun -n 3 python3 -mpytest -k "not ${XFAILS_IN_PARALLEL}"
 
