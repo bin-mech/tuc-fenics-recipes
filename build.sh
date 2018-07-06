@@ -31,12 +31,13 @@ EIGEN_VERSION=3.3.4
 PYBIND11_VERSION=2.2.3
 DOLFIN_VERSION="${FENICS_VERSION}.post1"
 
-# Create directory for downloading sources
-mkdir -p "${FENICS_PREFIX}/src"
-
+# Compiler flags
 export CFLAGS="-O2 -pipe -march=native -ftree-vectorize"
 export CXXFLAGS="-O2 -pipe -march=native -ftree-vectorize"
 export FFLAGS="-O2 -pipe -march=native -ftree-vectorize"
+
+# Create directory for downloading sources
+mkdir -p "${FENICS_PREFIX}/src"
 
 # Install PETSc
 cd "${FENICS_PREFIX}/src"
@@ -45,24 +46,24 @@ mkdir -p petsc-${PETSC_VERSION}
 cd petsc-${PETSC_VERSION}
 tar --strip-components=1 -xzf ../petsc-${PETSC_VERSION}.tar.gz
 rm ../petsc-${PETSC_VERSION}.tar.gz
-./configure \\
-    --with-debugging=0 \\
-    --with-fortran-bindings=0 \\
-    --COPTFLAGS="${CFLAGS}" \\
-    --CXXOPTFLAGS="${CXXFLAGS}" \\
-    --FOPTFLAGS="${FFLAGS}" \\
-    --download-metis \\
-    --download-parmetis \\
-    --download-ptscotch \\
-    --download-suitesparse \\
-    --download-openblas \\
-    --download-scalapack \\
-    --download-mumps \\
-    --download-superlu \\
-    --download-superlu_dist \\
-    --download-hypre \\
-    --download-hdf5 --download-hdf5-configure-arguments="--enable-parallel" \\
-    --prefix="${FENICS_PREFIX}" \\
+./configure \
+    --with-debugging=0 \
+    --with-fortran-bindings=0 \
+    --COPTFLAGS="${CFLAGS}" \
+    --CXXOPTFLAGS="${CXXFLAGS}" \
+    --FOPTFLAGS="${FFLAGS}" \
+    --download-metis \
+    --download-parmetis \
+    --download-ptscotch \
+    --download-suitesparse \
+    --download-openblas \
+    --download-scalapack \
+    --download-mumps \
+    --download-superlu \
+    --download-superlu_dist \
+    --download-hypre \
+    --download-hdf5 --download-hdf5-configure-arguments="--enable-parallel" \
+    --prefix="${FENICS_PREFIX}" \
     --with-make-np=${PROCS}
 make
 make install
@@ -83,25 +84,25 @@ make clean
 export SLEPC_DIR="${FENICS_PREFIX}"
 
 # Build NumPy, Matplotlib, SciPy against our BLAS/LAPACK
-NPY_NUM_BUILD_JOBS=${PROCS} OPENBLAS="${FENICS_PREFIX}/lib/libopenblas.a" \\
-    ${PIP3} install -vv --prefix="${FENICS_PREFIX}" --upgrade --ignore-installed \\
-    --no-binary="numpy,matplotlib,scipy" \\
-    numpy==${NUMPY_VERSION} \\
-    matplotlib==${MATPLOTLIB_VERSION} \\
+NPY_NUM_BUILD_JOBS=${PROCS} OPENBLAS="${FENICS_PREFIX}/lib/libopenblas.a" \
+    ${PIP3} install -vv --prefix="${FENICS_PREFIX}" --upgrade --ignore-installed \
+    --no-binary="numpy,matplotlib,scipy" \
+    numpy==${NUMPY_VERSION} \
+    matplotlib==${MATPLOTLIB_VERSION} \
     scipy==${SCIPY_VERSION}
 
 # Install other Python packages
-${PIP3} install -vv --prefix="${FENICS_PREFIX}" --upgrade --ignore-installed \\
-    jupyter==${JUPYTER_VERSION} \\
-    sympy==${SYMPY_VERSION} \\
+${PIP3} install -vv --prefix="${FENICS_PREFIX}" --upgrade --ignore-installed \
+    jupyter==${JUPYTER_VERSION} \
+    sympy==${SYMPY_VERSION} \
     pkgconfig==${PKGCONFIG_VERSION}
 
 # Build mpi4py, petsc4py, slepc4py from source
-#${PIP3} install -vv --prefix="${FENICS_PREFIX}" \\
+#${PIP3} install -vv --prefix="${FENICS_PREFIX}" \
 #    https://bitbucket.org/mpi4py/mpi4py/downloads/mpi4py-${MPI4PY_VERSION}.tar.gz
-${PIP3} install -vv --prefix="${FENICS_PREFIX}" \\
+${PIP3} install -vv --prefix="${FENICS_PREFIX}" \
     https://bitbucket.org/petsc/petsc4py/downloads/petsc4py-${PETSC4PY_VERSION}.tar.gz
-${PIP3} install -vv --prefix="${FENICS_PREFIX}" \\
+${PIP3} install -vv --prefix="${FENICS_PREFIX}" \
     https://bitbucket.org/slepc/slepc4py/downloads/slepc4py-${SLEPC4PY_VERSION}.tar.gz
 
 # Install Eigen headers
@@ -130,11 +131,16 @@ make install
 rm -rf ../build
 
 # Install FEniCS Python packages
+cd "${FENICS_PREFIX}/src"
 ${PIP3} install -vv --prefix="${FENICS_PREFIX}" fenics-ffc==${FENICS_VERSION}
 
 # Get DOLFIN (post release)
 cd "${FENICS_PREFIX}/src"
-git clone -b ${DOLFIN_VERSION} https://bitbucket.org/fenics-project/dolfin.git
+wget https://bitbucket.org/fenics-project/dolfin/downloads/dolfin-${DOLFIN_VERSION}.tar.gz
+mkdir -p dolfin
+cd dolfin
+tar --strip-components=1 -xzf ../dolfin-${DOLFIN_VERSION}.tar.gz
+rm ../dolfin-${DOLFIN_VERSION}.tar.gz
 
 # Build dolfin C++ library
 cd "${FENICS_PREFIX}/src/dolfin"
@@ -157,7 +163,11 @@ cp -r * "${FENICS_PREFIX}/share/dolfin/demo/python"
 
 # Get mshr
 cd "${FENICS_PREFIX}/src"
-git clone -b ${FENICS_VERSION} https://bitbucket.org/fenics-project/mshr.git
+wget https://bitbucket.org/fenics-project/mshr/downloads/mshr-${FENICS_VERSION}.tar.gz
+mkdir -p mshr
+cd mshr
+tar --strip-components=1 -xzf ../mshr-${FENICS_VERSION}.tar.gz
+rm ../mshr-${FENICS_VERSION}.tar.gz
 
 # Build mshr C++ library
 cd "${FENICS_PREFIX}/src/mshr"
