@@ -2,7 +2,7 @@
 set -e -x
 
 # Number of process for parallel make steps
-: ${PROCS:=4}
+: ${PROCS:=$(($(nproc)/2+1))}
 
 # Update pip, the system one is buggy
 PIP_VERSION=10.0.1
