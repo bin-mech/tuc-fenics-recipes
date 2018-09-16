@@ -16,20 +16,21 @@ ${PIP3} install --user pip==${PIP_VERSION}
 source fenics.conf
 
 # Choose dependencies versions
-PETSC_VERSION=3.9.2
-SLEPC_VERSION=3.9.1
+PETSC_VERSION=3.8.4
+SLEPC_VERSION=3.8.3
 NUMPY_VERSION=1.14.5
 MATPLOTLIB_VERSION=2.2.2
 SCIPY_VERSION=1.1.0
 JUPYTER_VERSION=1.0.0
 SYMPY_VERSION=1.1.1
-PKGCONFIG_VERSION=1.3.1
+PLY_VERSION=3.11
+FLUFLLOCK_VERSION=3.2
+SIX_VERSION=1.11.0
 #MPI4PY_VERSION=3.0.0
-PETSC4PY_VERSION=3.9.1
-SLEPC4PY_VERSION=3.9.0
+PETSC4PY_VERSION=3.8.1
+SLEPC4PY_VERSION=3.8.0
 EIGEN_VERSION=3.3.4
-PYBIND11_VERSION=2.2.3
-DOLFIN_VERSION="${FENICS_VERSION}.post1"
+DOLFIN_VERSION="${FENICS_VERSION}.post0"
 
 # Compiler flags
 export CFLAGS="-O2 -pipe -march=native -ftree-vectorize"
@@ -95,7 +96,9 @@ NPY_NUM_BUILD_JOBS=${PROCS} OPENBLAS="${FENICS_PREFIX}/lib/libopenblas.a" \
 ${PIP3} install -vv --prefix="${FENICS_PREFIX}" --upgrade --ignore-installed \
     jupyter==${JUPYTER_VERSION} \
     sympy==${SYMPY_VERSION} \
-    pkgconfig==${PKGCONFIG_VERSION}
+    ply==${PLY_VERSION} \
+    flufl.lock==${FLUFLLOCK_VERSION} \
+    six==${SIX_VERSION}
 
 # Build mpi4py, petsc4py, slepc4py from source
 #${PIP3} install -vv --prefix="${FENICS_PREFIX}" \
@@ -118,21 +121,11 @@ cmake -DCMAKE_INSTALL_PREFIX="${FENICS_PREFIX}" ../
 make install
 rm -rf ../build
 
-# Install pybind11 headers
-cd "${FENICS_PREFIX}/src"
-wget -O pybind11-${PYBIND11_VERSION}.tar.gz https://github.com/pybind/pybind11/archive/v${PYBIND11_VERSION}.tar.gz
-tar -xzf pybind11-${PYBIND11_VERSION}.tar.gz
-rm pybind11-${PYBIND11_VERSION}.tar.gz
-cd pybind11-${PYBIND11_VERSION}
-mkdir -p build
-cd build
-cmake -DPYBIND11_TEST=off -DCMAKE_INSTALL_PREFIX="${FENICS_PREFIX}" ../
-make install
-rm -rf ../build
-
 # Install FEniCS Python packages
 cd "${FENICS_PREFIX}/src"
 ${PIP3} install -vv --prefix="${FENICS_PREFIX}" fenics-ffc==${FENICS_VERSION}
+${PIP3} install -vv --prefix="${FENICS_PREFIX}" \
+    https://bitbucket.org/fenics-project/instant/downloads/instant-${FENICS_VERSION}.tar.gz
 
 # Get DOLFIN (post release)
 cd "${FENICS_PREFIX}/src"
@@ -142,7 +135,7 @@ cd dolfin
 tar --strip-components=1 -xzf ../dolfin-${DOLFIN_VERSION}.tar.gz
 rm ../dolfin-${DOLFIN_VERSION}.tar.gz
 
-# Build dolfin C++ library
+# Build dolfin
 cd "${FENICS_PREFIX}/src/dolfin"
 mkdir -p build
 cd build
@@ -150,16 +143,6 @@ cmake -DCMAKE_INSTALL_PREFIX="${FENICS_PREFIX}" ../
 make -j ${PROCS}
 make install
 rm -rf ../build
-
-# Build dolfin Python library
-cd "${FENICS_PREFIX}/src/dolfin/python"
-${PIP3} install -vv --prefix="${FENICS_PREFIX}" .
-
-# Install dolfin Python demos
-cd "${FENICS_PREFIX}/src/dolfin/python/demo"
-python3 generate-demo-files.py
-mkdir -p "${FENICS_PREFIX}/share/dolfin/demo/python"
-cp -r * "${FENICS_PREFIX}/share/dolfin/demo/python"
 
 # Get mshr
 cd "${FENICS_PREFIX}/src"
@@ -169,7 +152,7 @@ cd mshr
 tar --strip-components=1 -xzf ../mshr-${FENICS_VERSION}.tar.gz
 rm ../mshr-${FENICS_VERSION}.tar.gz
 
-# Build mshr C++ library
+# Build mshr
 cd "${FENICS_PREFIX}/src/mshr"
 mkdir -p build
 cd build
@@ -177,7 +160,3 @@ cmake -DCMAKE_INSTALL_PREFIX="${FENICS_PREFIX}" ../
 make -j ${PROCS}
 make install
 rm -rf ../build
-
-# Build mshr Python library
-cd "${FENICS_PREFIX}/src/mshr/python"
-${PIP3} install -vv --prefix="${FENICS_PREFIX}" .
