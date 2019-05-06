@@ -5,7 +5,7 @@ set -e -x
 : ${PROCS:=$(($(nproc)/2+1))}
 
 # Update pip, the system one is buggy
-PIP_VERSION=10.0.1
+PIP_VERSION=19.1
 USER_SITE=$(python3 -c"import site, sys; sys.stdout.write(site.getusersitepackages())")
 mkdir -p "${USER_SITE}"
 export PYTHONPATH="${USER_SITE}:${PYTHONPATH}"
@@ -16,20 +16,21 @@ ${PIP3} install --user pip==${PIP_VERSION}
 source fenics.conf
 
 # Choose dependencies versions
-PETSC_VERSION=3.9.2
-SLEPC_VERSION=3.9.1
-NUMPY_VERSION=1.14.5
-MATPLOTLIB_VERSION=2.2.2
-SCIPY_VERSION=1.1.0
+PETSC_VERSION=3.11.1
+SLEPC_VERSION=3.11.1
+NUMPY_VERSION=1.16.3
+MATPLOTLIB_VERSION=3.0.3
+SCIPY_VERSION=1.2.1
 JUPYTER_VERSION=1.0.0
-SYMPY_VERSION=1.1.1
-PKGCONFIG_VERSION=1.3.1
-#MPI4PY_VERSION=3.0.0
-PETSC4PY_VERSION=3.9.1
-SLEPC4PY_VERSION=3.9.0
-EIGEN_VERSION=3.3.4
-PYBIND11_VERSION=2.2.3
-DOLFIN_VERSION="${FENICS_VERSION}.post1"
+SYMPY_VERSION=1.4
+PKGCONFIG_VERSION=1.5.1
+MPI4PY_VERSION=3.0.1
+PETSC4PY_VERSION=3.11.0
+SLEPC4PY_VERSION=3.11.0
+EIGEN_VERSION=3.3.7
+PYBIND11_VERSION=2.2.4
+FFC_VERSION="${FENICS_VERSION}.post0"
+DOLFIN_VERSION="${FENICS_VERSION}.post0"
 
 # Compiler flags
 export CFLAGS="-O2 -pipe -march=native -ftree-vectorize"
@@ -49,6 +50,7 @@ rm ../petsc-${PETSC_VERSION}.tar.gz
 ./configure \
     --with-debugging=0 \
     --with-fortran-bindings=0 \
+    --with-cxx-dialect=C++11 \
     --COPTFLAGS="${CFLAGS}" \
     --CXXOPTFLAGS="${CXXFLAGS}" \
     --FOPTFLAGS="${FFLAGS}" \
@@ -98,8 +100,8 @@ ${PIP3} install -vv --prefix="${FENICS_PREFIX}" --upgrade --ignore-installed \
     pkgconfig==${PKGCONFIG_VERSION}
 
 # Build mpi4py, petsc4py, slepc4py from source
-#${PIP3} install -vv --prefix="${FENICS_PREFIX}" \
-#    https://bitbucket.org/mpi4py/mpi4py/downloads/mpi4py-${MPI4PY_VERSION}.tar.gz
+${PIP3} install -vv --ignore-installed --prefix="${FENICS_PREFIX}" \
+    https://bitbucket.org/mpi4py/mpi4py/downloads/mpi4py-${MPI4PY_VERSION}.tar.gz
 ${PIP3} install -vv --prefix="${FENICS_PREFIX}" \
     https://bitbucket.org/petsc/petsc4py/downloads/petsc4py-${PETSC4PY_VERSION}.tar.gz
 ${PIP3} install -vv --prefix="${FENICS_PREFIX}" \
@@ -119,6 +121,8 @@ make install
 rm -rf ../build
 
 # Install pybind11 headers
+# NB: This works by fluke because DOLFIN Python build
+#     pulls pybind11==2.2.4 from PyPI and installs it too!
 cd "${FENICS_PREFIX}/src"
 wget -O pybind11-${PYBIND11_VERSION}.tar.gz https://github.com/pybind/pybind11/archive/v${PYBIND11_VERSION}.tar.gz
 tar -xzf pybind11-${PYBIND11_VERSION}.tar.gz
@@ -132,7 +136,7 @@ rm -rf ../build
 
 # Install FEniCS Python packages
 cd "${FENICS_PREFIX}/src"
-${PIP3} install -vv --prefix="${FENICS_PREFIX}" fenics-ffc==${FENICS_VERSION}
+${PIP3} install -vv --prefix="${FENICS_PREFIX}" fenics-ffc==${FFC_VERSION}
 
 # Get DOLFIN (post release)
 cd "${FENICS_PREFIX}/src"

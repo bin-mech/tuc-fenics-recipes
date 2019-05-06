@@ -20,7 +20,7 @@ Building FEniCS
 
 3. To test the build run::
 
-    pip3 install --user pytest
+    python3 -m pip install --user pytest
 
     source fenics.conf
 
